@@ -4,16 +4,28 @@ using RepoDb.SqlServer.IntegrationTests.Models;
 using RepoDb.SqlServer.IntegrationTests.Setup;
 using System.Linq;
 using System.Threading.Tasks;
+using static RepoDb.SqlServer.IntegrationTests.Setup.StringPkTables;
 
 namespace RepoDb.SqlServer.IntegrationTests.Operations
 {
     [TestClass]
     public class InsertAllTest
     {
+        #region Constants/Privates
+
+        private const int EXPECTED_STRING_LENGTH = 36;
+
+        #endregion
+
         [TestInitialize]
         public void Initialize()
         {
             Database.Initialize();
+
+            using var connection = new SqlConnection(Database.ConnectionString).EnsureOpen();
+            connection.ExecuteNonQuery(GetStringPkTableCreationQuery(StringType.NVarChar, EXPECTED_STRING_LENGTH));
+            connection.ExecuteNonQuery(GetStringPkTableCreationQuery(StringType.VarChar, EXPECTED_STRING_LENGTH));
+
             Cleanup();
         }
 
@@ -21,6 +33,10 @@ namespace RepoDb.SqlServer.IntegrationTests.Operations
         public void Cleanup()
         {
             Database.Cleanup();
+
+            using var connection = new SqlConnection(Database.ConnectionString);
+            connection.Truncate(NVARCHAR_TABLE_NAME);
+            connection.Truncate(VARCHAR_TABLE_NAME);
         }
 
         #region DataEntity
@@ -428,6 +444,58 @@ namespace RepoDb.SqlServer.IntegrationTests.Operations
         }
 
         #endregion
+
+        #endregion
+
+        #region StringPrimaryKey
+
+        [TestMethod]
+        [DataRow(NVARCHAR_TABLE_NAME)]
+        [DataRow(VARCHAR_TABLE_NAME)]
+        public void TestSqlConnectionInsertAllDoesNotTruncateModelsPrimaryKeyField(string tableName)
+        {
+            // Setup
+            var tables = CreateStringPkTables(2, EXPECTED_STRING_LENGTH);
+
+            using var connection = new SqlConnection(Database.ConnectionString);
+
+            // Act
+            var result = connection.InsertAll(tableName, tables);
+
+            // Assert
+            Assert.AreEqual(tables.Count, result);
+            tables.ForEach(table => table.AssertFieldLengthEquals(EXPECTED_STRING_LENGTH));
+
+            // Act
+            var queryResult = connection.QueryAll<StringPkTable>(tableName);
+
+            // Assert
+            Assert.IsTrue(tables.SequenceEqual(queryResult));
+        }
+
+        [TestMethod]
+        [DataRow(NVARCHAR_TABLE_NAME)]
+        [DataRow(VARCHAR_TABLE_NAME)]
+        public async Task TestSqlConnectionInsertAllAsyncDoesNotTruncateModelsPrimaryKeyField(string tableName)
+        {
+            // Setup
+            var tables = CreateStringPkTables(10, EXPECTED_STRING_LENGTH);
+
+            using var connection = new SqlConnection(Database.ConnectionString);
+
+            // Act
+            var result = await connection.InsertAllAsync(tableName, tables);
+
+            // Assert
+            Assert.AreEqual(tables.Count, result);
+            tables.ForEach(table => table.AssertFieldLengthEquals(EXPECTED_STRING_LENGTH));
+
+            // Act
+            var queryResult = connection.QueryAll<StringPkTable>(tableName);
+
+            // Assert
+            Assert.IsTrue(tables.SequenceEqual(queryResult));
+        }
 
         #endregion
     }

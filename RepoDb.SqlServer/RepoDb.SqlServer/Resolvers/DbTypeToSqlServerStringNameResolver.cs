@@ -25,7 +25,7 @@ namespace RepoDb.Resolvers
                 DbType.Int64 => "BIGINT",
                 DbType.Binary => "BINARY",
                 DbType.Boolean => "BIT",
-                DbType.String => "NVARCHAR",
+                DbType.String => "NVARCHAR(MAX)",
                 DbType.Date => "DATE",
                 DbType.DateTime => "DATETIME",
                 DbType.DateTime2 => "DATETIME2",
@@ -38,12 +38,12 @@ namespace RepoDb.Resolvers
                 DbType.Time => "TIME",
                 DbType.Byte => "TINYINT",
                 DbType.Guid => "UNIQUEIDENTIFIER",
-                DbType.AnsiString => "VARCHAR",
+                DbType.AnsiString => "VARCHAR(MAX)",
                 DbType.AnsiStringFixedLength => "CHAR",
                 DbType.StringFixedLength => "NCHAR",
                 DbType.Object => "OBJECT",
                 DbType.Xml => "XML",
-                _ => "NVARCHAR",
+                _ => "NVARCHAR(MAX)",
             };
         }
     }

@@ -180,7 +180,7 @@ namespace RepoDb.SqlServer.UnitTests.Resolvers
             var name = m_resolver.Resolve(dbType).ToLowerInvariant();
 
             // Assert
-            Assert.AreEqual("nvarchar", name);
+            Assert.AreEqual("nvarchar(max)", name);
         }
 
         [TestMethod]
@@ -245,7 +245,7 @@ namespace RepoDb.SqlServer.UnitTests.Resolvers
             var name = m_resolver.Resolve(dbType).ToLowerInvariant();
 
             // Assert
-            Assert.AreEqual("varchar", name);
+            Assert.AreEqual("varchar(max)", name);
         }
 
         [TestMethod]
